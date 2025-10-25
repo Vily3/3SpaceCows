@@ -124,4 +124,75 @@ string FFBI(){
     "It all started with you walking in with a bannana, and ended with The Fast Food Burito Incident"
     "You've doomed us all. The rapture begins"
 }
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <iomanip>
 
+// Function to simulate the API call and response generation.
+// In a real C++ application, this is where you would use a library 
+// (like libcurl for HTTP and nlohmann/json for JSON) to make the actual request.
+std::string get_gemini_greeting(const std::string& handle, const std::string& crew) {
+    
+    // --- MOCK API INTERACTION START ---
+    
+    // 1. Construct the API Prompt
+    // The user's input is dynamically inserted into the instruction string.
+    std::string user_prompt = "Howdy, space traveler! My handle is " + handle + " from the " + crew + " crew. "
+                              "Greet me like a friendly space rancher. Give me a short, enthusiastic welcome message "
+                              "that uses space-western slang and humor, and mentions my handle and crew. "
+                              "Perhaps even a little nod to celestial bovines or interstellar pastures. Keep the response very concise, under 50 words.";
+
+    // 2. Mock the Gemini API Response
+    // This simulates the final text output parsed from the API's JSON response.
+    std::string mock_response;
+    if (handle.empty() || crew.empty()) {
+        // This simulates a validation/error response
+        mock_response = "Error: Galactic coordinates missing. You gotta tell me who you are, buckaroo!";
+    } else {
+        // This is the simulated successful greeting response
+        mock_response = "Well howdy, " + handle + " of the mighty " + crew + "! You're welcome on this cosmic ranch, where the comets are branded and the nebula is full of mighty fine space cows. Go rustle up some fun!";
+    }
+
+    // 3. Mock Error Handling (Check for internal errors)
+    if (mock_response.find("Error") != std::string::npos) {
+        return "CONNECTION ERROR: Failed to contact the Galactic Rancher's Communications Array. " + mock_response;
+    }
+
+    // --- MOCK API INTERACTION END ---
+    
+    return mock_response;
+}
+
+// Main application loop
+int main() {
+    // Set up console styling
+    std::cout << "\n============================================\n";
+    std::cout << std::setw(45) << std::left << "     THE GALACTIC RANCHER'S WELCOME (C++)" << "\n";
+    std::cout << "============================================\n";
+
+    std::string fullName;
+    std::string guild;
+
+    // Get user input
+    std::cout << "Enter your Cosmic Drifter's Handle: ";
+    // Use std::getline to capture full lines, including spaces
+    std::getline(std::cin, fullName);
+
+    std::cout << "Enter your Galactic Herd or Crew: ";
+    std::getline(std::cin, guild);
+
+    // Placeholder for loading state
+    std::cout << "\nHerding stars... Beaming Up Greeting...\n";
+    
+    // Call the function (which mocks the API request)
+    std::string greeting = get_gemini_greeting(fullName, guild);
+
+    // Output the result
+    std::cout << "\n--------------------------------------------\n";
+    std::cout << "From the Cosmic Watering Hole:\n";
+    std::cout << ">> " << greeting << "\n";
+    std::cout << "--------------------------------------------\n";
+    
+    return 0;
+}
