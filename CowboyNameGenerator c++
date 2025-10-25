@@ -21,23 +21,49 @@ size_t WriteCallback(void* contents, size_t size, size_t nmemb, string* output) 
     return totalSize;
 }
 
+
+
+int rand = (rand() % 3) + 1;
+
+//to lower for comparisons 
+std::string to_lower(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return std::tolower(c); });
+    return s;
+}
+
+
 int main() {
     string firstName, lastName, guild;
 
-    cout << "Enter your first name: ";
-    getline(cin, firstName);
-    cout << "Enter your last name: ";
-    getline(cin, lastName);
+    cout << "Enter your name: ";
+    getline(cin, name);
+    
     cout << "Enter your guild: ";
     getline(cin, guild);
+
+    to_lower(guild);
+    String givePromt;
+
+    if(guild == "alien")
+        givePromt = Alien();
+    else if(guild == "cowboy")
+        givePromt = Cowboy();
+    else if(guild == "outlaw")
+        givePromt = Outlaw();
+    else if(guild == "sherif")
+        givePromt = Sherif();
+    else if(guild == "martian")
+        givePromt = Martian();
+    else
+        givePromt = FFBI();
+
 
     // Create the prompt for Gemini
     json prompt = {
         {"contents", {
             {{"role", "user"},
              {"parts", {{{"text",
-                 "Hello Gemini! My name is " + firstName + " " + lastName +
-                 " from the guild " + guild + ". Please greet me!"}}}}
+                 "Hello Gemini! My name is " + name + " please write a short story about: " + prompt}}}}
             }
         }}
     };
@@ -88,40 +114,134 @@ int main() {
 
 
 string Outlaw(){
-    "outlaw cow with utters on its head dancing, on MarsSpelledBackwards"
-    "after sucessfult robbing a bank, you drunkenly tried to rob the same bank"
-    "you get ready to rob a bank. You have your fake mustache, boots, and the hat of a sherif you stole a long time ago. but you forget its the cyberpunk era"
+    if (rand == 1)
+        return "outlaw cow with utters on its head dancing, on MarsSpelledBackwards";
+    else if (rand == 2)
+        return "after sucessfult robbing a bank, you drunkenly tried to rob the same bank";
+    else 
+        return "you get ready to rob a bank. You have your fake mustache, boots, and the hat of a sherif you stole a long time ago. but you forget its the cyberpunk era";
 }
 
 string Cowboy(){
-    "hotub time machine into the present on Nov.9, their birthday, in an undisclosed major city"
-    "Enter's therapy because they keep loosing their duels to doors"
-    "you are ready to leave town so you get on your chiken because you are too good for horses"
+    if (rand == 1)
+        return "hotub time machine into the present on Nov.9, their birthday, in an undisclosed major city";
+    else if (rand == 2)
+        return "Enter's therapy because they keep loosing their duels to doors";
+    else 
+        return "you are ready to leave town so you get on your chiken because you are too good for horses";
 }
 
 string Sherif(){
-    "Stand off, with a cow-cowboy with a pistol in its mouth"
-    "cyborg sherif meets you during one of its nightly patrols"
-    "The same horse keeps aresting you, the sherif"
+    if (rand == 1)
+        return "Stand off, with a cow-cowboy with a pistol in its mouth";
+    else if (rand == 2)
+        return "cyborg sherif meets you during one of its nightly patrols";
+    else
+        return "The same horse keeps aresting you, the sherif";
 
 }
 
 string Alien(){
-    "making a human dusiguse and working a dead-end job as an accountant"
-    return "in a slapping contest with Will Smith fighting"
-    "Aliens abduct you, but then almost imidiately return you cuz you keep asking \"are we there yet?\""
+    if (rand == 1)
+        return "making a human dusiguse and working a dead-end job as an accountant";
+    else if (rand == 2)
+        return "in a slapping contest with Will Smith fighting";
+    else
+        return "Aliens abduct you, but then almost imidiately return you cuz you keep asking \"are we there yet?\"";
 
 }
 
 string Martian(){
-    "you a martian, are watching a new episode of your favorate reality TV show came out \"Humans\""
-    "you are a matian and reminise on your memory of your tour of Earth, that was 6 years ago and you'ev yet to find the exit in this IKEA"
-    "you, a martian find out about dogs and immediately start a “Bring Dogs to Mars” campaign to Mars."
+    if (rand == 1)
+        return "you a martian, are watching a new episode of your favorate reality TV show came out \"Humans\"";
+    else if (rand == 2)
+        return "you are a matian and reminise on your memory of your tour of Earth, that was 6 years ago and you'ev yet to find the exit in this IKEA";
+    else
+        return "you, a martian find out about dogs and immediately start a “Bring Dogs to Mars” campaign to Mars.";
 }
 
 string FFBI(){
-    "you are being hunted down by the (FFBI) Future Federal Beuro of Investigation"
-    "It all started with you walking in with a bannana, and ended with The Fast Food Burito Incident"
-    "You've doomed us all. The rapture begins"
+    if (rand == 1)
+        return "you are being hunted down by the (FFBI) Future Federal Beuro of Investigation";
+    if (rand == 2)
+        return "It all started with you walking in with a bannana, and ended with The Fast Food Burito Incident";
+    else
+    return "You've doomed us all. The rapture begins";
 }
 
+/////////////////////////////////////////////////////
+//Front end
+////////////////////////////////////////////////////
+
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <iomanip>
+
+// Function to simulate the API call and response generation.
+// In a real C++ application, this is where you would use a library 
+// (like libcurl for HTTP and nlohmann/json for JSON) to make the actual request.
+std::string get_gemini_greeting(const std::string& handle, const std::string& crew) {
+
+    // --- MOCK API INTERACTION START ---
+
+    // 1. Construct the API Prompt
+    // The user's input is dynamically inserted into the instruction string.
+    std::string user_prompt = "Howdy, space traveler! My handle is " + handle + " from the " + crew + " crew. "
+                              "Greet me like a friendly space rancher. Give me a short, enthusiastic welcome message "
+                              "that uses space-western slang and humor, and mentions my handle and crew. "
+                              "Perhaps even a little nod to celestial bovines or interstellar pastures. Keep the response very concise, under 50 words.";
+
+    // 2. Mock the Gemini API Response
+    // This simulates the final text output parsed from the API's JSON response.
+    std::string mock_response;
+    if (handle.empty() || crew.empty()) {
+        // This simulates a validation/error response
+        mock_response = "Error: Galactic coordinates missing. You gotta tell me who you are, buckaroo!";
+    } else {
+        // This is the simulated successful greeting response
+        mock_response = "Well howdy, " + handle + " of the mighty " + crew + "! You're welcome on this cosmic ranch, where the comets are branded and the nebula is full of mighty fine space cows. Go rustle up some fun!";
+    }
+
+    // 3. Mock Error Handling (Check for internal errors)
+    if (mock_response.find("Error") != std::string::npos) {
+        return "CONNECTION ERROR: Failed to contact the Galactic Rancher's Communications Array. " + mock_response;
+    }
+
+    // --- MOCK API INTERACTION END ---
+
+    return mock_response;
+}
+
+// Main application loop
+int main() {
+    // Set up console styling
+    std::cout << "\n============================================\n";
+    std::cout << std::setw(45) << std::left << "     THE GALACTIC RANCHER'S WELCOME (C++)" << "\n";
+    std::cout << "============================================\n";
+
+    std::string fullName;
+    std::string guild;
+
+    // Get user input
+    std::cout << "Enter your Cosmic Drifter's Handle: ";
+    // Use std::getline to capture full lines, including spaces
+    std::getline(std::cin, fullName);
+
+    std::cout << "Enter your Galactic Herd or Crew: ";
+    std::getline(std::cin, guild);
+
+    // Placeholder for loading state
+    std::cout << "\nHerding stars... Beaming Up Greeting...\n";
+
+    // Call the function (which mocks the API request)
+    std::string greeting = get_gemini_greeting(fullName, guild);
+
+    // Output the result
+    std::cout << "\n--------------------------------------------\n";
+    std::cout << "From the Cosmic Watering Hole:\n";
+    std::cout << ">> " << greeting << "\n";
+    std::cout << "--------------------------------------------\n";
+
+    return 0;
+}
