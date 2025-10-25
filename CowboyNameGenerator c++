@@ -1,0 +1,127 @@
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <curl/curl.h>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+using namespace std;
+
+// Gemini API key (Replace with your own)
+const string GEMINI_API_KEY = "YOUR_GEMINI_API_KEY";
+
+// Gemini endpoint
+const string GEMINI_API_URL =
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
+
+// Function to capture response
+size_t WriteCallback(void* contents, size_t size, size_t nmemb, string* output) {
+    size_t totalSize = size * nmemb;
+    output->append((char*)contents, totalSize);
+    return totalSize;
+}
+
+int main() {
+    string firstName, lastName, guild;
+
+    cout << "Enter your first name: ";
+    getline(cin, firstName);
+    cout << "Enter your last name: ";
+    getline(cin, lastName);
+    cout << "Enter your guild: ";
+    getline(cin, guild);
+
+    // Create the prompt for Gemini
+    json prompt = {
+        {"contents", {
+            {{"role", "user"},
+             {"parts", {{{"text",
+                 "Hello Gemini! My name is " + firstName + " " + lastName +
+                 " from the guild " + guild + ". Please greet me!"}}}}
+            }
+        }}
+    };
+
+    string responseBuffer;
+
+    CURL* curl = curl_easy_init();
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, GEMINI_API_URL.c_str());
+        curl_easy_setopt(curl, CURLOPT_POST, 1L);
+
+        string jsonData = prompt.dump();
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonData.c_str());
+
+        struct curl_slist* headers = nullptr;
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
+
+        CURLcode res = curl_easy_perform(curl);
+        if (res != CURLE_OK)
+            cerr << "CURL error: " << curl_easy_strerror(res) << endl;
+
+        curl_easy_cleanup(curl);
+        curl_slist_free_all(headers);
+    } else {
+        cerr << "Failed to initialize CURL!" << endl;
+        return 1;
+    }
+
+    try {
+        json result = json::parse(responseBuffer);
+        if (result.contains("candidates")) {
+            string reply = result["candidates"][0]["content"]["parts"][0]["text"];
+            cout << "\nGemini says:\n" << reply << endl;
+        } else {
+            cout << "Unexpected response:\n" << responseBuffer << endl;
+        }
+    } catch (const exception& e) {
+        cerr << "JSON parse error: " << e.what() << endl;
+        cerr << "Raw response:\n" << responseBuffer << endl;
+    }
+
+    return 0;
+}
+
+
+string Outlaw(){
+    "outlaw cow with utters on its head dancing, on MarsSpelledBackwards"
+    "after sucessfult robbing a bank, you drunkenly tried to rob the same bank"
+    "you get ready to rob a bank. You have your fake mustache, boots, and the hat of a sherif you stole a long time ago. but you forget its the cyberpunk era"
+}
+
+string Cowboy(){
+    "hotub time machine into the present on Nov.9, their birthday, in an undisclosed major city"
+    "Enter's therapy because they keep loosing their duels to doors"
+    "you are ready to leave town so you get on your chiken because you are too good for horses"
+}
+
+string Sherif(){
+    "Stand off, with a cow-cowboy with a pistol in its mouth"
+    "cyborg sherif meets you during one of its nightly patrols"
+    "The same horse keeps aresting you, the sherif"
+
+}
+
+string Alien(){
+    "making a human dusiguse and working a dead-end job as an accountant"
+    return "in a slapping contest with Will Smith fighting"
+    "Aliens abduct you, but then almost imidiately return you cuz you keep asking \"are we there yet?\""
+
+}
+
+string Martian(){
+    "you a martian, are watching a new episode of your favorate reality TV show came out \"Humans\""
+    "you are a matian and reminise on your memory of your tour of Earth, that was 6 years ago and you'ev yet to find the exit in this IKEA"
+    "you, a martian find out about dogs and immediately start a “Bring Dogs to Mars” campaign to Mars."
+}
+
+string FFBI(){
+    "you are being hunted down by the (FFBI) Future Federal Beuro of Investigation"
+    "It all started with you walking in with a bannana, and ended with The Fast Food Burito Incident"
+    "You've doomed us all. The rapture begins"
+}
+
