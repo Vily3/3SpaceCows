@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Galactic Rancher's Welcome</title>
+    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- NEW: jsQR Library for scanning -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    
+    <!-- Configure Tailwind for custom styles and font --><script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Load Inter font --><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%); /* Deep space to warm glow */
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+        }
+
+        /* Keyframes for the background gradient animation */
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Keyframes for distant, slow-moving elements (top-left to bottom-right) */
+        @keyframes fly-far {
+            from { background-position: 0% 0%; }
+            to { background-position: 200% 200%; }
+        }
+        /* Keyframes for close, fast-moving elements (bottom-right to top-left) */
+        @keyframes fly-close {
+            from { background-position: 100% 100%; }
+            to { background-position: -100% -100%; }
+        }
+
+        /* Overlay for multiple layers of flying images (Parallax Effect) */
+        .flying-cowboy-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            /* FIXED: Using your uploaded cow image */
+            background-image: 
+                url('uploaded:Untitled510_20251025155629.PNG-dcd5ae40-918f-409c-840e-ae056c35582f'), 
+                url('uploaded:Untitled510_20251025155629.PNG-dcd5ae40-918f-409c-840e-ae056c35582f'),
+                url('uploaded:Untitled510_20251025155629.PNG-dcd5ae40-918f-409c-840e-ae056c35582f'); 
+            
+            /* Sizing for the different layers to create depth: Small (slowest), Medium, Large (fastest) */
+            background-size: 150px, 200px, 300px; 
+            opacity: 0.15; /* Adjusted opacity for subtlety */
+            
+            /* Initial position for the layers */
+            background-position: 
+                0 0, 
+                50% 50%, 
+                80% 20%; 
+
+            /* Animations for the different layers: varied speeds for parallax */
+            animation: 
+                fly-far 90s linear infinite,      /* Small Cow - slowest */
+                fly-close 50s linear infinite,    /* Medium Cow - medium speed */
+                fly-far 35s linear infinite;      /* Large Cow - fastest */
+        }
+
+        /* --- NEW GALACTIC STYLES --- */
+        .galactic-glow {
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.8), 0 0 15px rgba(0, 150, 255, 0.6);
+        }
+
+        .neon-button {
+            box-shadow: 0 0 10px #4f46e5, 0 0 25px rgba(79, 70, 229, 0.8); /* Indigo glow */
+        }
+        .neon-button:hover {
+            box-shadow: 0 0 15px #c084fc, 0 0 30px #c084fc, 0 0 45px #c084fc; /* Fuchsia hover glow */
+        }
+
+        #app-card {
+            background-color: rgba(255, 255, 255, 0.95); /* Slightly less transparent */
+        }
+        
+        /* --- NEW CAMERA STYLES --- */
+        #videoFeed {
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            border: 2px solid #06b6d4; /* cyan-500 */
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Floating Cowboy/Space Cow Background Overlay --><div class="flying-cowboy-overlay"></div>
+
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <!-- Galactic Card Structure --><div id="app-card" class="w-full max-w-md shadow-2xl rounded-xl p-8 transition duration-500 hover:shadow-3xl border-8 border-cyan-400/80 relative z-10">
+            
+            <!-- Galactic Title with Glow --><h1 class="text-3xl font-bold text-center text-cyan-400 mb-6 flex items-center justify-center galactic-glow">
+                <!-- FIXED: Replaced map pin with cowboy hat icon --><svg class="w-10 h-10 inline-block mr-2 text-pink-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12.32L12 6l1 1.68V14h-2v-6.32zM15.5 10.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm-7 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
+                The Galactic Rancher's Welcome
+            </h1>
+
+            <!-- NEW: Camera Section -->
+            <div id="cameraContainer" class="hidden mb-4 space-y-2">
+                <video id="videoFeed" playsinline muted></video>
+                <canvas id="canvas" class="hidden"></canvas>
+                <p id="cameraStatus" class="text-center text-sm text-cyan-600 font-medium">Point camera at a QR code...</p>
+                <button onclick="stopScanning()" class="w-full py-2 px-4 rounded-lg text-white font-semibold bg-red-600 hover:bg-red-700 focus:outline-none">
+                    Stop Camera
+                </button>
+            </div>
+
+            <!-- NEW: Scan Button -->
+            <button id="scanButton" onclick="startScanning()" class="w-full mb-4 py-2 px-4 rounded-lg text-white font-semibold bg-cyan-600 hover:bg-cyan-700 focus:outline-none neon-button">
+                Scan Handle & Crew (QR)
+            </button>
+
+
+            <!-- Input Fields --><div class="space-y-4">
+                <div>
+                    <label for="fullName" class="block text-sm font-medium text-stone-700">Cosmic Drifter's Handle</label>
+                    <input type="text" id="fullName" class="mt-1 block w-full px-3 py-2 border border-cyan-500 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm" placeholder="Star-Lord, Captain Mal, etc.">
+                </div>
+                <div>
+                    <label for="guild" class="block text-sm font-medium text-stone-700">Galactic Herd or Crew (Theme: Alien, Cowboy, Outlaw, Sherif, Martian, FFBI)</label>
+                    <input type="text" id="guild" class="mt-1 block w-full px-3 py-2 border border-cyan-500 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm" placeholder="e.g., Millennium Falcon (Cowboy), Firefly (Outlaw), etc.">
+                </div>
+            </div>
+
+            <!-- Action Button with Neon Effect --><button id="greetButton" onclick="greetUser()" class="w-full mt-6 py-2 px-4 border border-transparent rounded-lg shadow-md text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 transform hover:scale-[1.02] neon-button">
+                Round Up a Story!
+            </button>
+
+            <!-- Response Area (Terminal Look) --><div id="responseArea" class="mt-8 pt-4 border-t border-cyan-400">
+                <h2 class="text-xl font-semibold text-stone-800 mb-3">From the Cosmic Watering Hole:</h2>
+                <div id="greetingOutput" class="min-h-[100px] bg-gray-800 p-4 rounded-lg text-cyan-200 whitespace-pre-wrap shadow-inner border border-cyan-400 flex items-center justify-center text-center">
+                    <span class="text-cyan-400/80">Engage thrusters... Enter your handle and crew name!</span>
+                </div>
+                <!-- Sources will be displayed here --><div id="sourcesOutput" class="text-xs mt-2 text-stone-500 hidden"></div>
+                <div id="loadingIndicator" class="hidden text-center mt-3 text-pink-500 font-medium">
+                    Herding stars... weaving a cosmic yarn!
+                </div>
+            </div>
+
+            <!-- Error Message Box (Darker/Sci-Fi Warning) --><div id="errorBox" class="hidden mt-4 p-3 bg-red-800 border border-red-400 text-red-200 rounded-lg" role="alert">
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- API CONFIGURATION (Using the model specified for text generation with grounding) ---
+        const apiKey = "AIzaSyDLQFyKQY_-WWpvPZXUuvYNj0H4IIJorpw"; 
+        const modelName = "gemini-2.5-flash-preview-09-2025";
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        
+        // --- C++ THEME LOGIC TRANSLATED TO JAVASCRIPT ---
+
+        const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+        const Outlaw = () => {
+            const prompts = [
+                "outlaw cow with utters on its head dancing, on MarsSpelledBackwards",
+                "after sucessfult robbing a bank, you drunkenly tried to rob the same bank",
+                "you get ready to rob a bank. You have your fake mustache, boots, and the hat of a sherif you stole a long time ago. but you forget its the cyberpunk era"
+            ];
+            return prompts[getRandomInt(0, 2)];
+        };
+
+        const Cowboy = () => {
+            const prompts = [
+                "hotub time machine into the present on Nov.9, their birthday, in an undisclosed major city",
+                "Enter's therapy because they keep loosing their duels to doors",
+                "you are ready to leave town so you get on your chiken because you are too good for horses"
+            ];
+            return prompts[getRandomInt(0, 2)];
+        };
+
+        const Sherif = () => {
+            const prompts = [
+                "Stand off, with a cow-cowboy with a pistol in its mouth",
+                "cyborg sherif meets you during one of its nightly patrols",
+                "The same horse keeps aresting you, the sherif"
+            ];
+            return prompts[getRandomInt(0, 2)];
+        };
+
+        const Alien = () => {
+            const prompts = [
+                "making a human dusiguse and working a dead-end job as an accountant",
+                "in a slapping contest with Will Smith fighting",
+                "Aliens abduct you, but then almost imidiately return you cuz you keep asking \"are we there yet?\""
+            ];
+            return prompts[getRandomInt(0, 2)];
+        };
+
+        const Martian = () => {
+            const prompts = [
+                "you a martian, are watching a new episode of your favorate reality TV show came out \"Humans\"",
+                "you are a matian and reminise on your memory of your tour of Earth, that was 6 years ago and you'ev yet to find the exit in this IKEA",
+                "you, a martian find out about dogs and immediately start a “Bring Dogs to Mars” campaign to Mars."
+            ];
+            return prompts[getRandomInt(0, 2)];
+        };
+
+        const FFBI = () => {
+            const prompts = [
+                "you are being hunted down by the (FFBI) Future Federal Beuro of Investigation",
+                "It all started with you walking in with a bannana, and ended with The Fast Food Burito Incident",
+                "You've doomed us all. The rapture begins"
+            ];
+            const rand = getRandomInt(1, 3);
+            if (rand === 1) return prompts[0];
+            else if (rand === 2) return prompts[1];
+            else return prompts[2];
+        };
+
+        // --- END THEME LOGIC ---
+
+        // --- NEW CAMERA SCANNING GLOBALS ---
+        let scanning = false;
+        let animationFrameId = null;
+        let stream = null;
+        const video = document.getElementById("videoFeed");
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        const cameraContainer = document.getElementById("cameraContainer");
+        const cameraStatus = document.getElementById("cameraStatus");
+        const scanButton = document.getElementById("scanButton");
+        
+        /**
+         * Starts the camera feed and scanning loop.
+         */
+        async function startScanning() {
+            if (scanning) return;
+
+            cameraContainer.classList.remove('hidden');
+            scanButton.disabled = true;
+            scanButton.textContent = "Opening Camera...";
+            cameraStatus.textContent = "Requesting camera access...";
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" } // Prefer rear camera
+                });
+                
+                video.srcObject = stream;
+                video.setAttribute("playsinline", true); // iOS compatibility
+                await video.play();
+
+                // Set canvas size once video is playing
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                scanning = true;
+                scanButton.textContent = "Scanning...";
+                cameraStatus.textContent = "Point camera at QR code (e.g., NAME:Spike,GUILD:Outlaw)";
+                
+                // Start the main drawing/decoding loop
+                animationFrameId = requestAnimationFrame(tick);
+
+            } catch (err) {
+                console.error("Camera access error:", err);
+                cameraStatus.textContent = `Error: Cannot access camera. ${err.message}`;
+                cameraContainer.classList.add('hidden');
+                scanButton.disabled = false;
+                scanButton.textContent = "Scan Handle & Crew (QR)";
+            }
+        }
+
+        /**
+         * Stops the camera feed and scanning loop.
+         */
+        function stopScanning() {
+            if (!scanning) return;
+            
+            scanning = false;
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            cameraContainer.classList.add('hidden');
+            scanButton.disabled = false;
+            scanButton.textContent = "Scan Handle & Crew (QR)";
+        }
+
+        /**
+         * Main scanning loop, runs every frame.
+         */
+        function tick() {
+            if (!scanning || video.readyState !== video.HAVE_ENOUGH_DATA) {
+                if(scanning) animationFrameId = requestAnimationFrame(tick); // Wait for video data
+                return;
+            }
+
+            // Ensure canvas size matches video
+            if (canvas.width !== video.videoWidth) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+            }
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "dontInvert",
+            });
+
+            if (code) {
+                // QR Code FOUND!
+                handleQrCodeData(code.data);
+                stopScanning();
+            } else {
+                // Keep scanning
+                animationFrameId = requestAnimationFrame(tick);
+            }
+        }
+        
+        /**
+         * Parses the QR code data and fills the form.
+         * Assumes format: "NAME:HandleName,GUILD:GuildName"
+         */
+        function handleQrCodeData(data) {
+            try {
+                let name = "";
+                let guild = "";
+
+                // Simple parser for "KEY:VALUE,KEY:VALUE"
+                const parts = data.split(',');
+                parts.forEach(part => {
+                    // FIX: Correctly destructure and handle colons in the value
+                    const [key, ...valueParts] = part.split(':'); 
+                    if (key && valueParts.length > 0) {
+                        const value = valueParts.join(':'); // Re-join if value had colons
+                        const trimmedKey = key.trim().toUpperCase();
+                        const trimmedValue = value.trim();
+                        if (trimmedKey === "NAME") {
+                            name = trimmedValue;
+                        } else if (trimmedKey === "GUILD") {
+                            guild = trimmedValue;
+                        }
+                    }
+                });
+
+                if (name) {
+                    document.getElementById('fullName').value = name;
+                }
+                if (guild) {
+                    document.getElementById('guild').value = guild;
+                }
+                
+                if(!name && !guild) {
+                     cameraStatus.textContent = `Found data, but not in expected format: ${data}`;
+                } else {
+                     cameraStatus.textContent = `Success! Found Name: ${name}, Guild: ${guild}`;
+                }
+
+            } catch (e) {
+                console.error("Error parsing QR data:", e);
+                cameraStatus.textContent = `Error reading QR data: ${e.message}`;
+            }
+        }
+        
+        /**
+         * Generic function to fetch with exponential backoff for resilience.
+         */
+        async function fetchWithRetry(url, options, maxRetries = 3) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.status === 429 && i < maxRetries - 1) {
+                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue; // Retry
+                    }
+                    if (!response.ok) {
+                        const errorBody = await response.text();
+                        throw new Error(`HTTP error! Status: ${response.status}. Body: ${errorBody}`);
+                    }
+                    return response;
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error; // Rethrow on last retry
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+
+        /**
+         * Calls the Gemini API with the generated prompt.
+         */
+        async function callGeminiAPI(handle, crew, themePrompt) {
+            // Construct the final, complete prompt using the C++ structure idea
+            const userQuery = `Act as a storyteller in a space-western style. Write a short, vivid story about a character named ${handle} from the guild ${crew}. The story should be based on this unique event: ${themePrompt}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                // Enable Google Search for grounding to potentially make the story richer
+                tools: [{ "google_search": {} }], 
+                systemInstruction: {
+                    parts: [{ text: "You are the Cosmic Watering Hole, a wise, quick-witted storyteller who narrates tall tales of space-western adventures. Keep the story short, single-paragraph, engaging, and in a tone suitable for a space cowboy." }]
+                }
+            };
+
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            const response = await fetchWithRetry(GEMINI_API_URL, options);
+            return response.json();
+        }
+
+
+        async function greetUser() {
+            // Stop scanning if it's active
+            if(scanning) stopScanning();
+            
+            const fullName = document.getElementById('fullName').value.trim();
+            const guild = document.getElementById('guild').value.trim();
+            
+            const greetingOutput = document.getElementById('greetingOutput');
+            const sourcesOutput = document.getElementById('sourcesOutput');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const greetButton = document.getElementById('greetButton');
+            const errorBox = document.getElementById('errorBox');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Reset UI states
+            errorBox.classList.add('hidden');
+            errorMessage.textContent = "";
+            sourcesOutput.classList.add('hidden');
+            sourcesOutput.innerHTML = "";
+            // Reset to default placeholder
+            greetingOutput.innerHTML = '<span class="text-cyan-400/80">Engage thrusters... Enter your handle and crew name!</span>';
+            // Add back centering classes for the placeholder
+            greetingOutput.classList.add('flex', 'items-center', 'justify-center', 'text-center');
+
+
+            if (!fullName || !guild) {
+                errorMessage.textContent = "Whoa there, space rancher! We need both your Cosmic Drifter's Handle and your Galactic Herd or Crew.";
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            // UI feedback for loading
+            loadingIndicator.classList.remove('hidden');
+            greetButton.disabled = true;
+            greetButton.textContent = "Beaming Up Story...";
+
+            try {
+                // 1. Determine theme prompt using the logic translated from C++
+                const theme = guild.toLowerCase().trim();
+                let themePrompt;
+
+                if (theme.includes("alien")) themePrompt = Alien();
+                else if (theme.includes("cowboy")) themePrompt = Cowboy();
+                else if (theme.includes("outlaw")) themePrompt = Outlaw();
+                else if (theme.includes("sherif")) themePrompt = Sherif();
+                else if (theme.includes("martian")) themePrompt = Martian();
+                else themePrompt = FFBI(); 
+
+                // 2. Call the REAL API
+                const result = await callGeminiAPI(fullName, guild, themePrompt);
+
+                // 3. Process the response
+                let reply = "The cosmic signal was weak. The story transmission was incomplete.";
+                let sources = [];
+
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    reply = candidate.content.parts[0].text;
+                    
+                    // Extract grounding sources
+                    const groundingMetadata = candidate.groundingMetadata;
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        sources = groundingMetadata.groundingAttributions
+                            .map(attribution => ({
+                                uri: attribution.web?.uri,
+                                title: attribution.web?.title,
+                            }))
+                            .filter(source => source.uri && source.title);
+                    }
+                } else {
+                    console.error("API Response issues:", result);
+                    // Check for blocked content if available
+                    if (result.candidates?.[0]?.finishReason === 'SAFETY') {
+                        reply = "Story transmission blocked by Galactic Safety Protocols.";
+                    }
+                }
+                
+                // 4. Update UI
+                greetingOutput.textContent = reply;
+                // FIXED: Remove centering classes for the story text and align left
+                greetingOutput.classList.remove('text-cyan-400/80', 'flex', 'items-center', 'justify-center', 'text-center');
+                greetingOutput.classList.add('text-cyan-200', 'text-left');
+
+
+                if (sources.length > 0) {
+                    const sourceHtml = 'Source' + (sources.length > 1 ? 's' : '') + ': ' + sources.map((s, i) => 
+                        `<a href="${s.uri}" target="_blank" class="text-pink-500 hover:text-pink-700 underline">${s.title}</a>`
+                    ).join(', ');
+                    sourcesOutput.innerHTML = sourceHtml;
+                    sourcesOutput.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error("Gemini API error:", error);
+                errorMessage.textContent = `A communication error occurred: ${error.message}.`;
+                errorBox.classList.remove('hidden');
+                greetingOutput.textContent = "Could not wrangle a story from the stars. Check the console for details.";
+                // FIXED: Remove centering classes for the error text and align left
+                greetingOutput.classList.remove('text-cyan-400/80', 'flex', 'items-center', 'justify-center', 'text-center');
+                greetingOutput.classList.add('text-cyan-200', 'text-left');
+            } finally {
+                // Cleanup
+                loadingIndicator.classList.add('hidden');
+                greetButton.disabled = false;
+                greetButton.textContent = "Round Up a Story!";
+            }
+        }
+    </script>
+</body>
+</html>
