@@ -1,0 +1,78 @@
+#include <opencv2/opencv.hpp>
+#include <tesseract/baseapi.h>
+#include <leptonica/allheaders.h>
+#include <iostream>
+#include <regex>
+
+int main() {
+    cv::VideoCapture cap(0); // Open the default camera (device 0)
+    if (!cap.isOpened()) {
+        std::cerr << "Error: Cannot open camera\n";
+        return -1;
+    }
+
+    tesseract::TessBaseAPI tess;
+    if (tess.Init(NULL, "eng")) {
+        std::cerr << "Error: Could not initialize tesseract.\n";
+        return -1;
+    }
+
+    std::cout << "Press 'c' to capture an image for OCR...\n";
+
+    cv::Mat frame;
+    while (true) {
+        cap >> frame;
+        if (frame.empty()) break;
+
+        cv::imshow("Camera", frame);
+
+        char key = (char)cv::waitKey(30);
+        if (key == 'c') {
+            // Convert to grayscale and preprocess
+            cv::Mat gray;
+            cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+            cv::threshold(gray, gray, 120, 255, cv::THRESH_BINARY);
+
+            // Use Tesseract to extract text
+            tess.SetImage((uchar*)gray.data, gray.size().width, gray.size().height, gray.channels(), gray.step1());
+            std::string text = tess.GetUTF8Text();
+
+            std::cout << "\nExtracted Text:\n" << text << "\n";
+
+            // Find name and guild using regex patterns
+            std::regex namePattern("Carlos|(?<=Name[:\\s])\\w+");
+            std::regex guildPattern("Alien|(?<=Group[:\\s])\\w+");
+
+            std::smatch match;
+
+            std::string name = "";
+            std::string guild = "";
+
+            if (std::regex_search(text, match, namePattern)) {
+                name = match.str();
+            }
+            if (std::regex_search(text, match, guildPattern)) {
+                guild = match.str();
+            }
+
+            std::cout << "\n--- Extracted Fields ---\n";
+            std::cout << "Name: " << (name.empty() ? "Not found" : name) << "\n";
+            std::cout << "Guild: " << (guild.empty() ? "Not found" : guild) << "\n";
+
+            // Save results
+            std::ofstream out("extracted_info.txt");
+            out << "name=" << name << "\n";
+            out << "guild=" << guild << "\n";
+            out.close();
+
+            std::cout << "\nSaved results to extracted_info.txt\n";
+        } else if (key == 27) { // ESC key
+            break;
+        }
+    }
+
+    cap.release();
+    cv::destroyAllWindows();
+    tess.End();
+    return 0;
+}
