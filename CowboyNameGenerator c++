@@ -3,18 +3,28 @@
 #include <cstdlib>
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
+#include <algorithm>
+#include <opencv2/opencv.hpp>
+#include <tesseract/baseapi.h>
+#include <leptonica/allheaders.h>
+#include <regex>
+#include <fstream>
 
 using json = nlohmann::json;
 using namespace std;
 
-// Gemini API key (Replace with your own)
-const string GEMINI_API_KEY = "YOUR_GEMINI_API_KEY";
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Gemini API Configuration
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Gemini endpoint
+const string GEMINI_API_KEY = "YOUR_GEMINI_API_KEY";
 const string GEMINI_API_URL =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
 
-// Function to capture response
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Helper: cURL write callback
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, string* output) {
     size_t totalSize = size * nmemb;
     output->append((char*)contents, totalSize);
@@ -22,50 +32,194 @@ size_t WriteCallback(void* contents, size_t size, size_t nmemb, string* output) 
 }
 
 
-
-int rand = (rand() % 3) + 1;
-
-//to lower for comparisons 
-std::string to_lower(std::string s) {
-    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return std::tolower(c); });
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Helper: Lowercase conversion
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+string to_lower(string s) {
+    transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return tolower(c); });
     return s;
 }
 
 
-int main() {
-    string firstName, lastName, guild;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OCR Camera Method
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    cout << "Enter your name: ";
-    getline(cin, name);
-    
-    cout << "Enter your guild: ";
-    getline(cin, guild);
 
-    to_lower(guild);
-    String givePromt;
+pair<string, string> CameraToText() {
+    cv::VideoCapture cap(0);
+    if (!cap.isOpened()) {
+        cerr << "Error: Cannot open camera\n";
+        return {"", ""};
+    }
 
-    if(guild == "alien")
-        givePromt = Alien();
-    else if(guild == "cowboy")
-        givePromt = Cowboy();
-    else if(guild == "outlaw")
-        givePromt = Outlaw();
-    else if(guild == "sherif")
-        givePromt = Sherif();
-    else if(guild == "martian")
-        givePromt = Martian();
+    tesseract::TessBaseAPI tess;
+    if (tess.Init(NULL, "eng")) {
+        cerr << "Error: Could not initialize Tesseract.\n";
+        return {"", ""};
+    }
+
+    cout << "Press 'c' to capture an image for OCR, or ESC to quit.\n";
+
+    cv::Mat frame;
+    string name, guild;
+
+    while (true) {
+        cap >> frame;
+        if (frame.empty()) break;
+
+        cv::imshow("Camera", frame);
+
+        char key = (char)cv::waitKey(30);
+        if (key == 'c') {
+            cv::Mat gray;
+            cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+            cv::threshold(gray, gray, 120, 255, cv::THRESH_BINARY);
+
+            tess.SetImage((uchar*)gray.data, gray.size().width, gray.size().height, gray.channels(), gray.step1());
+            string text = tess.GetUTF8Text();
+
+            cout << "\nExtracted Text:\n" << text << "\n";
+
+            regex namePattern("Carlos|(?<=Name[:\\s])\\w+");
+            regex guildPattern("Alien|(?<=Group[:\\s])\\w+");
+
+            smatch match;
+            if (regex_search(text, match, namePattern)) name = match.str();
+            if (regex_search(text, match, guildPattern)) guild = match.str();
+
+            cout << "\n--- Extracted Fields ---\n";
+            cout << "Name: " << (name.empty() ? "Not found" : name) << "\n";
+            cout << "Guild: " << (guild.empty() ? "Not found" : guild) << "\n";
+
+            ofstream out("extracted_info.txt");
+            out << "name=" << name << "\n";
+            out << "guild=" << guild << "\n";
+            out.close();
+
+            cout << "Saved results to extracted_info.txt\n";
+            break;
+        } else if (key == 27) { // ESC
+            break;
+        }
+    }
+
+    cap.release();
+    cv::destroyAllWindows();
+    tess.End();
+
+    return {name, guild};
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Randomized story snippets
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int randnum = (rand() % 3) + 1;
+
+string Outlaw(){
+    if (randnum == 1)
+        return "outlaw cow with utters on its head dancing, on MarsSpelledBackwards";
+    else if (randnum == 2)
+        return "after successfully robbing a bank, you drunkenly tried to rob the same bank";
+    else 
+        return "you get ready to rob a bank. You have your fake mustache, boots, and the hat of a sherif you stole a long time ago. but you forget it's the cyberpunk era";
+}
+
+string Cowboy(){
+    if (randnum == 1)
+        return "hot tub time machine into the present on Nov.9, their birthday, in an undisclosed major city";
+    else if (randnum == 2)
+        return "Enters therapy because they keep losing their duels to doors";
+    else 
+        return "you are ready to leave town so you get on your chicken because you are too good for horses";
+}
+
+string Sherif(){
+    if (randnum == 1)
+        return "Stand off, with a cow-cowboy with a pistol in its mouth";
+    else if (randnum == 2)
+        return "cyborg sherif meets you during one of its nightly patrols";
     else
-        givePromt = FFBI();
+        return "The same horse keeps arresting you, the sherif";
+}
+
+string Alien(){
+    if (randnum == 1)
+        return "making a human disguise and working a dead-end job as an accountant";
+    else if (randnum == 2)
+        return "in a slapping contest with Will Smith fighting";
+    else
+        return "Aliens abduct you, but then almost immediately return you cuz you keep asking 'are we there yet?'";
+}
+
+string Martian(){
+    if (randnum == 1)
+        return "you a martian, are watching a new episode of your favorite reality TV show called 'Humans'";
+    else if (randnum == 2)
+        return "you are a martian and reminisce about your tour of Earth, that was 6 years ago and you’ve yet to find the exit in this IKEA";
+    else
+        return "you, a martian, find out about dogs and immediately start a 'Bring Dogs to Mars' campaign.";
+}
+
+string FFBI(){
+    if (randnum == 1)
+        return "you are being hunted down by the (FFBI) Future Federal Bureau of Investigation";
+    if (randnum == 2)
+        return "It all started with you walking in with a banana, and ended with The Fast Food Burrito Incident";
+    else
+        return "You've doomed us all. The rapture begins.";
+}
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Main Program
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int main() {
+    srand(time(0));
+
+    string name, guild;
+
+    cout << "Use camera to detect name and guild? (y/n): ";
+    char choice;
+    cin >> choice;
+    cin.ignore();
+
+    if (choice == 'y' || choice == 'Y') {
+        auto result = CameraToText();
+        name = result.first;
+        guild = result.second;
+    }
+
+    if (name.empty()) {
+        cout << "Enter your name: ";
+        getline(cin, name);
+    }
+
+    if (guild.empty()) {
+        cout << "Enter your guild: ";
+        getline(cin, guild);
+    }
+
+    guild = to_lower(guild);
+
+    string givePrompt;
+    if(guild == "alien") givePrompt = Alien();
+    else if(guild == "cowboy") givePrompt = Cowboy();
+    else if(guild == "outlaw") givePrompt = Outlaw();
+    else if(guild == "sherif") givePrompt = Sherif();
+    else if(guild == "martian") givePrompt = Martian();
+    else givePrompt = FFBI();
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Create the prompt for Gemini
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     json prompt = {
-        {"contents", {
-            {{"role", "user"},
-             {"parts", {{{"text",
-                 "Hello Gemini! My name is " + name + " please write a short story about: " + prompt}}}}
-            }
-        }}
+        {"contents", {{
+            {"role", "user"},
+            {"parts", {{{"text",
+                "Hello Gemini! My name is " + name + " please write a short story about: " + givePrompt}}}}
+        }}}
     };
 
     string responseBuffer;
@@ -96,6 +250,9 @@ int main() {
         return 1;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Parse and display response
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     try {
         json result = json::parse(responseBuffer);
         if (result.contains("candidates")) {
@@ -108,140 +265,6 @@ int main() {
         cerr << "JSON parse error: " << e.what() << endl;
         cerr << "Raw response:\n" << responseBuffer << endl;
     }
-
-    return 0;
-}
-
-
-string Outlaw(){
-    if (rand == 1)
-        return "outlaw cow with utters on its head dancing, on MarsSpelledBackwards";
-    else if (rand == 2)
-        return "after sucessfult robbing a bank, you drunkenly tried to rob the same bank";
-    else 
-        return "you get ready to rob a bank. You have your fake mustache, boots, and the hat of a sherif you stole a long time ago. but you forget its the cyberpunk era";
-}
-
-string Cowboy(){
-    if (rand == 1)
-        return "hotub time machine into the present on Nov.9, their birthday, in an undisclosed major city";
-    else if (rand == 2)
-        return "Enter's therapy because they keep loosing their duels to doors";
-    else 
-        return "you are ready to leave town so you get on your chiken because you are too good for horses";
-}
-
-string Sherif(){
-    if (rand == 1)
-        return "Stand off, with a cow-cowboy with a pistol in its mouth";
-    else if (rand == 2)
-        return "cyborg sherif meets you during one of its nightly patrols";
-    else
-        return "The same horse keeps aresting you, the sherif";
-
-}
-
-string Alien(){
-    if (rand == 1)
-        return "making a human dusiguse and working a dead-end job as an accountant";
-    else if (rand == 2)
-        return "in a slapping contest with Will Smith fighting";
-    else
-        return "Aliens abduct you, but then almost imidiately return you cuz you keep asking \"are we there yet?\"";
-
-}
-
-string Martian(){
-    if (rand == 1)
-        return "you a martian, are watching a new episode of your favorate reality TV show came out \"Humans\"";
-    else if (rand == 2)
-        return "you are a matian and reminise on your memory of your tour of Earth, that was 6 years ago and you'ev yet to find the exit in this IKEA";
-    else
-        return "you, a martian find out about dogs and immediately start a “Bring Dogs to Mars” campaign to Mars.";
-}
-
-string FFBI(){
-    if (rand == 1)
-        return "you are being hunted down by the (FFBI) Future Federal Beuro of Investigation";
-    if (rand == 2)
-        return "It all started with you walking in with a bannana, and ended with The Fast Food Burito Incident";
-    else
-    return "You've doomed us all. The rapture begins";
-}
-
-/////////////////////////////////////////////////////
-//Front end
-////////////////////////////////////////////////////
-
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <iomanip>
-
-// Function to simulate the API call and response generation.
-// In a real C++ application, this is where you would use a library 
-// (like libcurl for HTTP and nlohmann/json for JSON) to make the actual request.
-std::string get_gemini_greeting(const std::string& handle, const std::string& crew) {
-
-    // --- MOCK API INTERACTION START ---
-
-    // 1. Construct the API Prompt
-    // The user's input is dynamically inserted into the instruction string.
-    std::string user_prompt = "Howdy, space traveler! My handle is " + handle + " from the " + crew + " crew. "
-                              "Greet me like a friendly space rancher. Give me a short, enthusiastic welcome message "
-                              "that uses space-western slang and humor, and mentions my handle and crew. "
-                              "Perhaps even a little nod to celestial bovines or interstellar pastures. Keep the response very concise, under 50 words.";
-
-    // 2. Mock the Gemini API Response
-    // This simulates the final text output parsed from the API's JSON response.
-    std::string mock_response;
-    if (handle.empty() || crew.empty()) {
-        // This simulates a validation/error response
-        mock_response = "Error: Galactic coordinates missing. You gotta tell me who you are, buckaroo!";
-    } else {
-        // This is the simulated successful greeting response
-        mock_response = "Well howdy, " + handle + " of the mighty " + crew + "! You're welcome on this cosmic ranch, where the comets are branded and the nebula is full of mighty fine space cows. Go rustle up some fun!";
-    }
-
-    // 3. Mock Error Handling (Check for internal errors)
-    if (mock_response.find("Error") != std::string::npos) {
-        return "CONNECTION ERROR: Failed to contact the Galactic Rancher's Communications Array. " + mock_response;
-    }
-
-    // --- MOCK API INTERACTION END ---
-
-    return mock_response;
-}
-
-// Main application loop
-int main() {
-    // Set up console styling
-    std::cout << "\n============================================\n";
-    std::cout << std::setw(45) << std::left << "     THE GALACTIC RANCHER'S WELCOME (C++)" << "\n";
-    std::cout << "============================================\n";
-
-    std::string fullName;
-    std::string guild;
-
-    // Get user input
-    std::cout << "Enter your Cosmic Drifter's Handle: ";
-    // Use std::getline to capture full lines, including spaces
-    std::getline(std::cin, fullName);
-
-    std::cout << "Enter your Galactic Herd or Crew: ";
-    std::getline(std::cin, guild);
-
-    // Placeholder for loading state
-    std::cout << "\nHerding stars... Beaming Up Greeting...\n";
-
-    // Call the function (which mocks the API request)
-    std::string greeting = get_gemini_greeting(fullName, guild);
-
-    // Output the result
-    std::cout << "\n--------------------------------------------\n";
-    std::cout << "From the Cosmic Watering Hole:\n";
-    std::cout << ">> " << greeting << "\n";
-    std::cout << "--------------------------------------------\n";
 
     return 0;
 }
