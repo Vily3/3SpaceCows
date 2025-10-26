@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Galactic Rancher's Welcome</title>
+    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind for custom styles and font --><script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Load Inter font --><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); /* Deep space to warm glow */
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+        }
+
+        /* Keyframes for the background gradient animation */
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Keyframes for distant, slow-moving elements (top-left to bottom-right) */
+        @keyframes fly-far {
+            from { background-position: 0% 0%; }
+            to { background-position: 200% 200%; }
+        }
+        /* Keyframes for close, fast-moving elements (bottom-right to top-left) */
+        @keyframes fly-close {
+            from { background-position: 100% 100%; }
+            to { background-position: -100% -100%; }
+        }
+
+        /* Overlay for multiple layers of flying images (Parallax Effect) */
+        .flying-cowboy-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            /* Using multiple URLs for varied cowboy images */
+            background-image: 
+                url('https://i.imgur.com/uRj04m7.png'), /* Space Cow - close layer */
+                url('https://i.imgur.com/gallery/E1lX7eQ.jpeg'), /* Classic Cowboy - close layer */
+                url('https://i.imgur.com/tC7N6zS.jpeg'), /* Western landscape - far layer */
+                url('https://i.imgur.com/1F6yM.png'); /* More abstract cowboy - far layer */
+            
+            /* Sizing for the different layers to create depth: Close (Space Cow), Close (Classic Cowboy), Far (Landscape), Far (Abstract) */
+            background-size: 200px, 250px, 300px, 150px; 
+            opacity: 0.18; /* Overall opacity for subtlety */
+            
+            /* Initial position for the layers (can be random or specific) */
+            background-position: 
+                0 0, /* Space Cow */
+                50% 50%, /* Classic Cowboy */
+                20% 80%, /* Western landscape */
+                80% 20%; /* Abstract cowboy */
+
+            /* Animations for the different layers: varied speeds for parallax */
+            animation: 
+                fly-close 35s linear infinite,      /* Space Cow - faster */
+                fly-far 50s linear infinite,        /* Classic Cowboy - medium */
+                fly-close 70s linear infinite,      /* Western landscape - slower */
+                fly-far 90s linear infinite;        /* Abstract cowboy - slowest */
+        }
+
+        #app-card {
+            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white for space feel */
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Floating Cowboy/Space Cow Background Overlay --><div class="flying-cowboy-overlay"></div>
+
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div id="app-card" class="w-full max-w-md shadow-2xl rounded-xl p-8 transition duration-500 hover:shadow-3xl border-4 border-fuchsia-400/50 relative z-10">
+            <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6 flex items-center justify-center">
+                <!-- Cow Icon SVG --><svg class="w-10 h-10 inline-block mr-2 text-fuchsia-500" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C8.13 2 5 4.96 5 8.5c0 2.45 1.05 4.6 2.73 6.07L12 22l4.27-7.43C17.95 13.1 19 10.95 19 8.5c0-3.54-3.13-6.5-7-6.5zm0 14c-2.48 0-4.5-2.02-4.5-4.5S9.52 7 12 7s4.5 2.02 4.5 4.5S14.48 16 12 16zM12 9.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5s1.5.67 1.5 1.5s-.67 1.5-1.5 1.5zM15 11c-.55 0-1-.45-1-1s.45-1 1-1s1 .45 1 1s-.45 1-1 1zM9 11c-.55 0-1-.45-1-1s.45-1 1-1s1 .45 1 1s-.45 1-1 1z"/>
+                </svg>
+                The Galactic Rancher's Welcome
+            </h1>
+
+            <!-- Input Fields --><div class="space-y-4">
+                <div>
+                    <label for="fullName" class="block text-sm font-medium text-stone-700">Cosmic Drifter's Handle</label>
+                    <input type="text" id="fullName" class="mt-1 block w-full px-3 py-2 border border-fuchsia-600 rounded-md shadow-sm focus:outline-none focus:ring-fuchsia-500 focus:border-fuchsia-500 sm:text-sm" placeholder="Star-Lord, Captain Mal, etc.">
+                </div>
+                <div>
+                    <label for="guild" class="block text-sm font-medium text-stone-700">Galactic Herd or Crew (Theme: Alien, Cowboy, Outlaw, Sherif, Martian, FFBI)</label>
+                    <input type="text" id="guild" class="mt-1 block w-full px-3 py-2 border border-fuchsia-600 rounded-md shadow-sm focus:outline-none focus:ring-fuchsia-500 focus:border-fuchsia-500 sm:text-sm" placeholder="e.g., Millennium Falcon (Cowboy), Firefly (Outlaw), etc.">
+                </div>
+            </div>
+
+            <!-- Action Button --><button id="greetButton" onclick="greetUser()" class="w-full mt-6 py-2 px-4 border border-transparent rounded-lg shadow-md text-base font-medium text-white bg-fuchsia-600 hover:bg-fuchsia-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fuchsia-500 transition duration-150 transform hover:scale-[1.02]">
+                Round Up a Story!
+            </button>
+
+            <!-- Response Area --><div id="responseArea" class="mt-8 pt-4 border-t border-fuchsia-300">
+                <h2 class="text-xl font-semibold text-stone-800 mb-3">From the Cosmic Watering Hole:</h2>
+                <div id="greetingOutput" class="min-h-[100px] bg-indigo-50 p-4 rounded-lg text-stone-700 whitespace-pre-wrap shadow-inner border border-fuchsia-300 flex items-center justify-center text-center">
+                    Enter your handle and crew name (use a theme name to generate a specific story!)
+                </div>
+                <!-- Sources will be displayed here --><div id="sourcesOutput" class="text-xs mt-2 text-stone-500 hidden"></div>
+                <div id="loadingIndicator" class="hidden text-center mt-3 text-fuchsia-700 font-medium">
+                    Herding stars... weaving a cosmic yarn!
+                </div>
+            </div>
+
+            <!-- Error Message Box --><div id="errorBox" class="hidden mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg" role="alert">
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- API CONFIGURATION (Using the model specified for text generation with grounding) ---
+        const apiKey = "AIzaSyDLQFyKQY_-WWpvPZXUuvYNj0H4IIJorpw"; // Leave empty as per instructions
+        const modelName = "gemini-2.5-flash-preview-09-2025";
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        
+        // --- C++ THEME LOGIC TRANSLATED TO JAVASCRIPT ---
+
+        const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+        const Outlaw = () => {
+            const prompts = [
+                "outlaw cow with utters on its head dancing, on MarsSpelledBackwards",
+                "after sucessfult robbing a bank, you drunkenly tried to rob the same bank",
+                "you get ready to rob a bank. You have your fake mustache, boots, and the hat of a sherif you stole a long time ago. but you forget its the cyberpunk era"
+            ];
+            return prompts[getRandomInt(0, 2)];
+        };
+
+        const Cowboy = () => {
+            const prompts = [
+                "hotub time machine into the present on Nov.9, their birthday, in an undisclosed major city",
+                "Enter's therapy because they keep loosing their duels to doors",
+                "you are ready to leave town so you get on your chiken because you are too good for horses"
+            ];
+            return prompts[getRandomInt(0, 2)];
+        };
+
+        const Sherif = () => {
+            const prompts = [
+                "Stand off, with a cow-cowboy with a pistol in its mouth",
+                "cyborg sherif meets you during one of its nightly patrols",
+                "The same horse keeps aresting you, the sherif"
+            ];
+            return prompts[getRandomInt(0, 2)];
+        };
+
+        const Alien = () => {
+            const prompts = [
+                "making a human dusiguse and working a dead-end job as an accountant",
+                "in a slapping contest with Will Smith fighting",
+                "Aliens abduct you, but then almost imidiately return you cuz you keep asking \"are we there yet?\""
+            ];
+            return prompts[getRandomInt(0, 2)];
+        };
+
+        const Martian = () => {
+            const prompts = [
+                "you a martian, are watching a new episode of your favorate reality TV show came out \"Humans\"",
+                "you are a matian and reminise on your memory of your tour of Earth, that was 6 years ago and you'ev yet to find the exit in this IKEA",
+                "you, a martian find out about dogs and immediately start a “Bring Dogs to Mars” campaign to Mars."
+            ];
+            return prompts[getRandomInt(0, 2)];
+        };
+
+        const FFBI = () => {
+            const prompts = [
+                "you are being hunted down by the (FFBI) Future Federal Beuro of Investigation",
+                "It all started with you walking in with a bannana, and ended with The Fast Food Burito Incident",
+                "You've doomed us all. The rapture begins"
+            ];
+            const rand = getRandomInt(1, 3);
+            if (rand === 1) return prompts[0];
+            else if (rand === 2) return prompts[1];
+            else return prompts[2];
+        };
+
+        // --- END THEME LOGIC ---
+        
+        /**
+         * Generic function to fetch with exponential backoff for resilience.
+         */
+        async function fetchWithRetry(url, options, maxRetries = 3) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.status === 429 && i < maxRetries - 1) {
+                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue; // Retry
+                    }
+                    if (!response.ok) {
+                        const errorBody = await response.text();
+                        throw new Error(`HTTP error! Status: ${response.status}. Body: ${errorBody}`);
+                    }
+                    return response;
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error; // Rethrow on last retry
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+
+        /**
+         * Calls the Gemini API with the generated prompt.
+         */
+        async function callGeminiAPI(handle, crew, themePrompt) {
+            // Construct the final, complete prompt using the C++ structure idea
+            const userQuery = `Hello Gemini! My name is ${handle} from the guild ${crew}. Please write a short, vivid story about: ${themePrompt}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                // Enable Google Search for grounding to potentially make the story richer
+                tools: [{ "google_search": {} }], 
+            };
+
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            const response = await fetchWithRetry(GEMINI_API_URL, options);
+            return response.json();
+        }
+
+
+        async function greetUser() {
+            const fullName = document.getElementById('fullName').value.trim();
+            const guild = document.getElementById('guild').value.trim();
+            
+            const greetingOutput = document.getElementById('greetingOutput');
+            const sourcesOutput = document.getElementById('sourcesOutput');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const greetButton = document.getElementById('greetButton');
+            const errorBox = document.getElementById('errorBox');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Reset UI states
+            errorBox.classList.add('hidden');
+            errorMessage.textContent = "";
+            sourcesOutput.classList.add('hidden');
+            sourcesOutput.innerHTML = "";
+            greetingOutput.textContent = "";
+
+            if (!fullName || !guild) {
+                errorMessage.textContent = "Whoa there, space rancher! We need both your Cosmic Drifter's Handle and your Galactic Herd or Crew.";
+                errorBox.classList.remove('hidden');
+                greetingOutput.innerHTML = "Enter your handle and crew name (use a theme name to generate a specific story!)";
+                return;
+            }
+
+            // UI feedback for loading
+            loadingIndicator.classList.remove('hidden');
+            greetButton.disabled = true;
+            greetButton.textContent = "Beaming Up Story...";
+
+            try {
+                // 1. Determine theme prompt using the logic translated from C++
+                const theme = guild.toLowerCase().trim();
+                let themePrompt;
+
+                if (theme.includes("alien")) themePrompt = Alien();
+                else if (theme.includes("cowboy")) themePrompt = Cowboy();
+                else if (theme.includes("outlaw")) themePrompt = Outlaw();
+                else if (theme.includes("sherif")) themePrompt = Sherif();
+                else if (theme.includes("martian")) themePrompt = Martian();
+                else themePrompt = FFBI(); 
+
+                // 2. Call the REAL API
+                const result = await callGeminiAPI(fullName, guild, themePrompt);
+
+                // 3. Process the response
+                let reply = "The cosmic signal was weak. The story transmission was incomplete.";
+                let sources = [];
+
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    reply = candidate.content.parts[0].text;
+                    
+                    // Extract grounding sources
+                    const groundingMetadata = candidate.groundingMetadata;
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        sources = groundingMetadata.groundingAttributions
+                            .map(attribution => ({
+                                uri: attribution.web?.uri,
+                                title: attribution.web?.title,
+                            }))
+                            .filter(source => source.uri && source.title);
+                    }
+                } else {
+                    console.error("API Response issues:", result);
+                    // Check for blocked content if available
+                    if (result.candidates?.[0]?.finishReason === 'SAFETY') {
+                        reply = "Story transmission blocked by Galactic Safety Protocols.";
+                    }
+                }
+                
+                // 4. Update UI
+                greetingOutput.textContent = reply;
+
+                if (sources.length > 0) {
+                    const sourceHtml = 'Source' + (sources.length > 1 ? 's' : '') + ': ' + sources.map((s, i) => 
+                        `<a href="${s.uri}" target="_blank" class="text-fuchsia-600 hover:text-fuchsia-800 underline">${s.title}</a>`
+                    ).join(', ');
+                    sourcesOutput.innerHTML = sourceHtml;
+                    sourcesOutput.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error("Gemini API error:", error);
+                errorMessage.textContent = `A communication error occurred: ${error.message}.`;
+                errorBox.classList.remove('hidden');
+                greetingOutput.textContent = "Could not wrangle a story from the stars. Check the console for details.";
+            } finally {
+                // Cleanup
+                loadingIndicator.classList.add('hidden');
+                greetButton.disabled = false;
+                greetButton.textContent = "Round Up a Story!";
+            }
+        }
+    </script>
+</body>
+</html>
+
